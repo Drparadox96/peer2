@@ -1,25 +1,23 @@
-const express = require('express');
-const { ExpressPeerServer } = require('peer');
-const app = express();
+import express from 'express';
+import { createServer } from 'http';
+import { ExpressPeerServer } from 'peer';
 
-// Use Render's dynamically assigned port or default to 10000
+const app = express();
 const PORT = process.env.PORT || 10000;
 
-// Create HTTP server
-const server = app.listen(PORT, () => {
-  console.log(`PeerJS server running on port ${PORT}`);
-});
+const server = createServer(app);
 
-// Attach PeerJS server to Express
 const peerServer = ExpressPeerServer(server, {
   debug: true,
-  path: '/myapp' // You can change this if needed
+  path: '/myapp'
 });
 
-// Mount the PeerJS server middleware
 app.use('/myapp', peerServer);
 
-// Optional: root endpoint for health check or info
 app.get('/', (req, res) => {
   res.send('PeerJS server is up and running!');
+});
+
+server.listen(PORT, () => {
+  console.log(`PeerJS server running on port ${PORT}`);
 });
