@@ -1,23 +1,26 @@
 import express from 'express';
-import { createServer } from 'http';
-import { ExpressPeerServer } from 'peer';
+import { PeerServer } from 'peer';
+import cors from 'cors';
 
 const app = express();
 const PORT = process.env.PORT || 10000;
 
-const server = createServer(app);
+// ✅ Enable CORS
+app.use(cors());
 
-const peerServer = ExpressPeerServer(server, {
-  debug: true,
-  path: '/myapp'
+const peerServer = PeerServer({
+  port: PORT,
+  path: '/myapp',
+  proxied: true, // important for reverse proxies like Render
 });
 
 app.use('/myapp', peerServer);
 
+// Optional root response
 app.get('/', (req, res) => {
   res.send('PeerJS server is up and running!');
 });
 
-server.listen(PORT, () => {
+app.listen(PORT, () => {
   console.log(`PeerJS server running on port ${PORT}`);
 });
