@@ -1,26 +1,31 @@
 import express from 'express';
-import { PeerServer } from 'peer';
+import { createServer } from 'http';
+import { ExpressPeerServer } from 'peer';
 import cors from 'cors';
 
 const app = express();
 const PORT = process.env.PORT || 10000;
 
-// ✅ Enable CORS
+// Enable CORS so your anonchat.us frontend can connect
 app.use(cors());
 
-const peerServer = PeerServer({
-  port: PORT,
-  path: '/myapp',
-  proxied: true, // important for reverse proxies like Render
-});
-
-app.use('/myapp', peerServer);
-
-// Optional root response
+// Serve a simple health check
 app.get('/', (req, res) => {
   res.send('PeerJS server is up and running!');
 });
 
-app.listen(PORT, () => {
-  console.log(`PeerJS server running on port ${PORT}`);
+// Create a single HTTP server…
+const server = createServer(app);
+
+// …and mount the PeerJS server onto it as middleware:
+const peerServer = ExpressPeerServer(server, {
+  path: '/myapp',
+  debug: true,
+  proxied: true,
+});
+app.use('/myapp', peerServer);
+
+// Now listen **only once**:
+server.listen(PORT, () => {
+  console.log(`PeerJS server listening on port ${PORT}`);
 });
